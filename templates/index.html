@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="top-container">
+            <div class="box" id="webcam-video">
+                <video id="video" width="640" height="480" autoplay muted></video>
+                <div id="wordOverlay" class="overlay"></div>
+                <button id="recordBtn">Record</button>
+                <form id="uploadForm" method="post" action="/upload" enctype="multipart/form-data">
+                    <input type="hidden" name="video" id="videoData">
+                </form>
+            </div>
+            <div class="box" id="video-analysis-box">
+                <label>Video Analysis:</label>
+                <div id="videoAnalysis"></div>
+            </div>
+        </div>
+        <form id="transcriptionForm" method="post" enctype="multipart/form-data" onsubmit="return false">
+            <div class="box" id="transcription-box">
+                <label>Transcription:</label>
+                <div class="transcription-container">
+                    <input type="hidden" name="video" id="videoBlobData">
+                    <input type="hidden" name="words-timing" id="wordsTiming">
+                    <textarea id="transcription" name="fixed-text" rows="10" cols="50"></textarea>
+                </div>
+                <div class="button-container">
+                    <button id="reTranscribeBtn" disabled>ReTranscribe</button>
+                    <button id="updateBtn" disabled>Update</button>
+                    <button id="saveBtn" disabled>Go!</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/recording.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/transcription.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

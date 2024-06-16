@@ -1,0 +1,116 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    max-width: 1000px;
+    width: 100%;
+    padding: 10px;
+}
+
+.top-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.box {
+    border: 2px solid #000;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    margin: 10px;
+}
+
+#webcam-video {
+    flex: 2;
+    position: relative;
+}
+
+#video-analysis-box {
+    flex: 1;
+}
+
+#transcription-box {
+    display: flex;
+    align-items: flex-start;
+    flex: 1;
+    width: 100%;
+    flex-direction: column;
+}
+
+.transcription-container {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+}
+
+#transcription {
+    flex-grow: 1;
+    height: 20vh; /* Fixed height by percentage */
+    margin-bottom: 10px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+#updateBtn, #saveBtn {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 0 5px;
+    width: 100px; /* Adjust as needed */
+    height: 40px; /* Adjust as needed */
+    box-sizing: border-box; /* Ensure padding and border are included in the height and width */
+}
+
+#updateBtn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+#saveBtn {
+    background-color: #008CBA;
+    color: white;
+}
+
+#recordBtn {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 20px;
+    box-sizing: border-box; /* Ensure padding and border are included in the height and width */
+}
+
+.overlay {
+    position: absolute;
+    bottom: 20%; /* Position 20% from the bottom */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    white-space: nowrap;
+    padding: 5px 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+}
+
+#updateBtn:disabled, #saveBtn:disabled #reTranscribeBtn:disabled {
+    background-color: #ccc;
+    color: #666;
+    pointer-events: none;
+    opacity: 0.5;
+}
