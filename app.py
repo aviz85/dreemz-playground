@@ -13,6 +13,9 @@ UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 auth = HTTPBasicAuth()
 
+# Ensure the uploads folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 # Load environment variables
 load_dotenv()
 
