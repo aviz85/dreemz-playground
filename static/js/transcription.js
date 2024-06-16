@@ -1,6 +1,9 @@
+let storedVideoBlob;
+
 function sendVideoForTranscription(videoBlob) {
     const formData = new FormData();
     formData.append('video', videoBlob);
+    storedVideoBlob = videoBlob;  // Store the video blob for later use
 
     console.log('Sending video for transcription...', videoBlob);
 
@@ -127,7 +130,7 @@ document.getElementById('updateBtn').onclick = () => {
         console.log('Update response received:', data);
 
         // Update the hidden field with the new words timing JSON
-        wordsTiming.value = JSON.stringify(JSON.parse(data.newWordsTiming).words);
+        wordsTiming.value = JSON.stringify(data.newWordsTiming);
 
         // Parse the new words timing JSON for display
         const newWords = JSON.parse(wordsTiming.value);
@@ -143,9 +146,8 @@ document.getElementById('updateBtn').onclick = () => {
 
 // Functionality for retranscribe button
 document.getElementById('reTranscribeBtn').onclick = () => {
-    const videoData = document.getElementById('videoData').files[0];
     const formData = new FormData();
-    formData.append('video', videoData);
+    formData.append('video', storedVideoBlob);
 
     fetch('/transcript', {
         method: 'POST',

@@ -6,19 +6,34 @@ import uuid
 from gateways.whisper_transcript import get_transcript_from_openai
 from gateways.gemini_flash_analyze import analyze_video
 from gateways.openai_update_transcript import update_transcript
+from flask_httpauth import HTTPBasicAuth
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+auth = HTTPBasicAuth()
 
 # Load environment variables
 load_dotenv()
 
+# Get username and password from environment variables
+USERNAME = os.getenv('USERNAME')
+PASSWORD = os.getenv('PASSWORD')
+
+# Define a function to verify the username and password
+@auth.verify_password
+def verify_password(username, password):
+    if username == USERNAME and password == PASSWORD:
+        return True
+    return False
+
 @app.route('/')
+@auth.login_required
 def index():
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
+@auth.login_required
 def upload():
     if 'video' not in request.files:
         return redirect(request.url)
@@ -31,10 +46,12 @@ def upload():
         return redirect(url_for('process', filename=file.filename))
 
 @app.route('/process/<filename>')
+@auth.login_required
 def process(filename):
     return render_template('process.html', filename=filename)
 
 @app.route('/video-analyze', methods=['POST'])
+@auth.login_required
 def video_analyze():
     if 'video' not in request.files:
         return jsonify({'error': 'No video file provided'}), 400
@@ -61,6 +78,7 @@ def video_analyze():
     return jsonify({'transcription': words})
 
 @app.route('/transcript', methods=['POST'])
+@auth.login_required
 def transcript():
     if 'video' not in request.files:
         return jsonify({'error': 'No video file provided'}), 400
@@ -87,6 +105,7 @@ def transcript():
     return jsonify({'transcription': words})
 
 @app.route('/analyze', methods=['POST'])
+@auth.login_required
 def analyze():
     if 'video' not in request.files:
         return jsonify({'error': 'No video file provided'}), 400
@@ -106,6 +125,7 @@ def analyze():
     return jsonify({'analysis': analysis})
 
 @app.route('/save', methods=['POST'])
+@auth.login_required
 def save():
     if 'video' not in request.files:
         return jsonify({'error': 'No video file provided'}), 400
@@ -127,6 +147,7 @@ def save():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/update-transcript', methods=['POST'])
+@auth.login_required
 def update_transcript_route():
     full_text = request.form['transcription']
     words_timing = request.form['wordsTiming']

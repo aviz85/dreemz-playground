@@ -5,3 +5,4 @@ openai            # OpenAI API client (check for the latest stable version)
 requests          # For making HTTP requests (>=2.28)
 gunicorn
 google-generativeai
+flask-httpauth
