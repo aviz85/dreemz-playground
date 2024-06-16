@@ -54,6 +54,7 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
                 video.srcObject = null;
                 video.src = url;
                 video.controls = true;
+				//video.volume = 1; // Unmute volume
                 video.play();
                 recordBtn.textContent = 'Retake';
 

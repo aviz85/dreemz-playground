@@ -1,9 +1,13 @@
-let storedVideoBlob;
-
+function cleanJSONText(text) {
+  return text
+    .replace(/&quot;/g, '"')  // Replace &quot; with "
+    .replace(/\\n/g, '')      // Remove escaped newline characters
+    .replace(/\\t/g, '')      // Remove escaped tab characters
+    .replace(/\\r/g, '');     // Remove escaped carriage return characters
+}
 function sendVideoForTranscription(videoBlob) {
     const formData = new FormData();
     formData.append('video', videoBlob);
-    storedVideoBlob = videoBlob;  // Store the video blob for later use
 
     console.log('Sending video for transcription...', videoBlob);
 
@@ -130,7 +134,7 @@ document.getElementById('updateBtn').onclick = () => {
         console.log('Update response received:', data);
 
         // Update the hidden field with the new words timing JSON
-        wordsTiming.value = JSON.stringify(data.newWordsTiming);
+        wordsTiming.value = JSON.stringify(JSON.parse(cleanJSONText(data.newWordsTiming)).words);
 
         // Parse the new words timing JSON for display
         const newWords = JSON.parse(wordsTiming.value);
@@ -146,8 +150,9 @@ document.getElementById('updateBtn').onclick = () => {
 
 // Functionality for retranscribe button
 document.getElementById('reTranscribeBtn').onclick = () => {
-    const formData = new FormData();
-    formData.append('video', storedVideoBlob);
+    const videoData = document.getElementById('videoData').files[0];
+    const formData = new FormData();v
+    formData.append('video', videoData);
 
     fetch('/transcript', {
         method: 'POST',
@@ -155,23 +160,18 @@ document.getElementById('reTranscribeBtn').onclick = () => {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Retranscribe response received:', data);
-
-        // Update the fields with the new transcription and words timing
+        console.log('Transcription data received:', data);
         const transcriptionBox = document.getElementById('transcription');
         const wordsTiming = document.getElementById('wordsTiming');
         transcriptionBox.value = data.transcription.map(word => word.word).join(' ');
         wordsTiming.value = JSON.stringify(data.transcription);
-
-        // Parse the new words timing JSON for display
-        const newWords = JSON.parse(wordsTiming.value);
-        displayWords(newWords);
-
-        alert('Retranscription completed successfully.');
+        const updateBtn = document.getElementById('updateBtn');
+        updateBtn.disabled = false;
+        const reTranscribeBtn = document.getElementById('reTranscribeBtn');
+        reTranscribeBtn.disabled = false;
     })
     .catch(error => {
-        console.error('Error during retranscription:', error);
-        alert(`Error during retranscription: ${error}`);
+        console.error('Error during transcription fetch:', error);
     });
 };
 
