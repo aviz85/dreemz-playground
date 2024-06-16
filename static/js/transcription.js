@@ -77,7 +77,9 @@ function displayAnalysis(data) {
     }
 }
 
-document.getElementById('saveBtn').onclick = () => {
+document.getElementById('saveBtn').onclick = (event) => {
+    event.preventDefault(); // Prevent the form from submitting immediately
+
     const recordedBlobs = window.recordedBlobs || [];
     if (recordedBlobs.length === 0) {
         alert('No video recorded. Please record a video first.');
@@ -87,35 +89,26 @@ document.getElementById('saveBtn').onclick = () => {
     const videoBlob = new Blob(recordedBlobs, { type: 'video/webm' });
     console.log('Saving video blob:', videoBlob);
 
-    const formData = new FormData(document.getElementById('transcriptionForm'));
-    formData.append('video', videoBlob);
+    // Convert Blob to File
+    const videoFile = new File([videoBlob], 'recorded_video.webm', { type: 'video/webm' });
 
-    fetch('/save', {
-        method: 'POST',
-        body: formData,
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Save response received:', data);
-        alert(`File saved successfully in folder: ${data.folder}`);
-    })
-    .catch(error => {
-        console.error('Error during save:', error);
-        alert(`Error during save: ${error}`);
-    });
+    // Create a DataTransfer object to append the file to the input
+    const videoFileInput = new DataTransfer();
+    videoFileInput.items.add(videoFile);
+
+    // Set the file input value
+    const videoInput = document.getElementById('videoBlobData');
+    videoInput.files = videoFileInput.files;
+
+    // Set the transcription data
+    const transcriptionBox = document.getElementById('transcription').value;
+    const transcriptionInput = document.getElementById('wordsTiming');
+    transcriptionInput.value = transcriptionBox;
+
+    // Submit the form
+    const form = document.getElementById('transcriptionForm');
+    form.submit();
 };
-
-// Enable update button when the transcription textarea is focused
-document.getElementById('transcription').addEventListener('focus', () => {
-    document.getElementById('updateBtn').disabled = false;
-});
-
-// Disable update button when retaking the video
-document.getElementById('recordBtn').addEventListener('click', () => {
-    document.getElementById('updateBtn').disabled = true;
-    document.getElementById('saveBtn').disabled = true;
-    document.getElementById('reTranscribeBtn').disabled = true;
-});
 
 // Functionality for update button
 document.getElementById('updateBtn').onclick = () => {
@@ -203,3 +196,25 @@ document.addEventListener('DOMContentLoaded', () => {
         displayWords(initialWords);
     }
 });
+
+// Function to reset the transcript
+function resetTranscript() {
+    // Reset the transcription textarea
+    const transcriptionBox = document.getElementById('transcription');
+    transcriptionBox.value = '';
+
+    // Reset the hidden words timing field
+    const wordsTiming = document.getElementById('wordsTiming');
+    wordsTiming.value = '';
+
+    // Disable the update and retranscribe buttons
+    const updateBtn = document.getElementById('updateBtn');
+    const reTranscribeBtn = document.getElementById('reTranscribeBtn');
+    updateBtn.disabled = true;
+    reTranscribeBtn.disabled = true;
+
+    // Clear the word overlay
+    const wordOverlay = document.getElementById('wordOverlay');
+    wordOverlay.textContent = '';
+    wordOverlay.style.display = 'none';
+}

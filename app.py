@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory
 import os
 import subprocess
 from dotenv import load_dotenv
 import uuid
+import base64
 from gateways.whisper_transcript import get_transcript_from_openai
 from gateways.gemini_flash_analyze import analyze_video
 from gateways.openai_update_transcript import update_transcript
@@ -38,20 +39,33 @@ def index():
 @app.route('/upload', methods=['POST'])
 @auth.login_required
 def upload():
-    if 'video' not in request.files:
-        return redirect(request.url)
-    file = request.files['video']
-    if file.filename == '':
-        return redirect(request.url)
-    if file:
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(filepath)
-        return redirect(url_for('process', filename=file.filename))
+    print("Upload route accessed")  # Debug statement
 
-@app.route('/process/<filename>')
-@auth.login_required
-def process(filename):
-    return render_template('process.html', filename=filename)
+    video_data = request.form.get('video')
+    if not video_data:
+        print("No video part in the request data")  # Debug statement
+        return redirect(request.url)
+    
+    # Extract the Base64 part from the data URL
+    base64_data = video_data.split(",")[1]
+    
+    # Decode the Base64 data
+    video_bytes = base64.b64decode(base64_data)
+    
+    # Save the video file in a new folder with a UUID
+    folder_name = str(uuid.uuid4())
+    folder_path = os.path.join(app.config['UPLOAD_FOLDER'], folder_name)
+    os.makedirs(folder_path, exist_ok=True)
+    
+    video_filename = 'video.webm'
+    video_path = os.path.join(folder_path, video_filename)
+    
+    with open(video_path, "wb") as video_file:
+        video_file.write(video_bytes)
+    
+    print(f"Saved video file to: {video_path}")  # Debug statement
+
+    return render_template('description.html', video_path=video_path)
 
 @app.route('/video-analyze', methods=['POST'])
 @auth.login_required
@@ -127,28 +141,6 @@ def analyze():
 
     return jsonify({'analysis': analysis})
 
-@app.route('/save', methods=['POST'])
-@auth.login_required
-def save():
-    if 'video' not in request.files:
-        return jsonify({'error': 'No video file provided'}), 400
-    video_file = request.files['video']
-
-    try:
-        # Create a new folder with a UUID
-        folder_name = str(uuid.uuid4())
-        folder_path = os.path.join(app.config['UPLOAD_FOLDER'], folder_name)
-        os.makedirs(folder_path, exist_ok=True)
-
-        # Save the video file in the new folder
-        video_filename = 'video.webm'  # or extract the file type from the header
-        video_path = os.path.join(folder_path, video_filename)
-        video_file.save(video_path)
-        
-        return jsonify({'folder': folder_path}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 @app.route('/update-transcript', methods=['POST'])
 @auth.login_required
 def update_transcript_route():
@@ -160,6 +152,12 @@ def update_transcript_route():
     
     # Return the updated words timing to the client
     return jsonify(newWordsTiming=new_words_timing)
+
+@app.route('/uploads/<folder>/<filename>')
+@auth.login_required
+def uploaded_file(folder, filename):
+    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], folder), filename)
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5002)

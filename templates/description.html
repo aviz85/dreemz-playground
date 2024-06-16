@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/analyze.css') }}">
+</head>
+<body>
+    <div class="container">
+        <input type="text" id="title" class="title-input" placeholder="Enter video title">
+        
+        <div class="chips">
+            <div class="chip">Category 1</div>
+            <div class="chip">Category 2</div>
+            <div class="chip">Category 3</div>
+            <div class="chip">Category 4</div>
+        </div>
+        
+        <div class="milestones">
+            <h3>Milestones</h3>
+            <ul>
+                <li>Milestone 1</li>
+                <li>Milestone 2</li>
+                <li>Milestone 3</li>
+                <li>Milestone 4</li>
+            </ul>
+        </div>
+        
+        <div class="images">
+            <img src="{{ url_for('static', filename='images/image1.jpg') }}" alt="Image 1">
+            <img src="{{ url_for('static', filename='images/image2.jpg') }}" alt="Image 2">
+            <img src="{{ url_for('static', filename='images/image3.jpg') }}" alt="Image 3">
+            <img src="{{ url_for('static', filename='images/image4.jpg') }}" alt="Image 4">
+        </div>
+        
+        <div class="video-container">
+            <video src="{{ video_path }}" controls></video>
+        </div>
+        
+        <form id="transcriptionForm" method="post" enctype="multipart/form-data" action="/upload">
+            <input type="hidden" name="video" id="videoBlobData">
+            <input type="hidden" name="words-timing" id="wordsTiming">
+            <textarea id="transcription" name="fixed-text" rows="10" cols="50"></textarea>
+            <button class="enhance-btn" id="saveBtn" type="submit">Enhance Video</button>
+        </form>
+    </div>
+
+    <script>
+        function enhanceVideo() {
+            alert('Enhance video functionality not implemented yet.');
+        }
+    </script>
+</body>
+</html>

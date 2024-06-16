@@ -1,5 +1,5 @@
 navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-    .then(s => {
+    .then(stream => {
         console.log('Access to video stream granted');
         const video = document.getElementById('video');
         const recordBtn = document.getElementById('recordBtn');
@@ -10,22 +10,19 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
         const wordsTiming = document.getElementById('wordsTiming');
 
         let mediaRecorder;
-        let recordedBlobs;
+        window.recordedBlobs = [];  // Make sure recordedBlobs is globally accessible
         let buffer = [];
-        const bufferSize = 50; // 5 seconds
+        const bufferSize = 50;  // 5 seconds
         let isFirst5SecondsSent = false;
 
-        stream = s;
         video.srcObject = stream;
 
         // Initialize MediaRecorder with the stream
         mediaRecorder = new MediaRecorder(stream);
-        recordedBlobs = [];
-
         mediaRecorder.ondataavailable = event => {
             if (event.data && event.data.size > 0) {
-                recordedBlobs.push(event.data);
-                
+                window.recordedBlobs.push(event.data);
+
                 if (!isFirst5SecondsSent) {
                     buffer.push(event.data);
 
@@ -40,7 +37,7 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
         };
 
         mediaRecorder.onstop = () => {
-            const superBuffer = new Blob(recordedBlobs, { type: 'video/webm' });
+            const superBuffer = new Blob(window.recordedBlobs, { type: 'video/webm' });
             const url = window.URL.createObjectURL(superBuffer);
 
             // Convert Blob to Base64 and set it as the value of videoData input
@@ -54,7 +51,6 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
                 video.srcObject = null;
                 video.src = url;
                 video.controls = true;
-				//video.volume = 1; // Unmute volume
                 video.play();
                 recordBtn.textContent = 'Retake';
 
@@ -71,6 +67,7 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
             } else if (recordBtn.textContent === 'Retake') {
                 // Replace recorded video with webcam feed
                 videoAnalysis.innerHTML = '';
+                resetTranscript();
                 video.controls = false;
                 video.src = '';
                 video.srcObject = stream;
@@ -78,16 +75,16 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
                 saveBtn.disabled = true;
 
                 // Clear previous recorded blobs and reset flags
-                recordedBlobs = [];
+                window.recordedBlobs = [];
                 buffer = [];
                 isFirst5SecondsSent = false;
 
-                mediaRecorder.start(100); // Start capturing data with 100ms chunks
+                mediaRecorder.start(100);  // Start capturing data with 100ms chunks
             } else {
-                recordedBlobs = [];
-                buffer = []; // Reset buffer
+                window.recordedBlobs = [];
+                buffer = [];  // Reset buffer
                 isFirst5SecondsSent = false;
-                mediaRecorder.start(100); // Start capturing data with 100ms chunks
+                mediaRecorder.start(100);  // Start capturing data with 100ms chunks
                 recordBtn.textContent = 'Stop';
             }
         };
@@ -96,3 +93,21 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
         console.error('getUserMedia error:', error);
         alert('Error accessing webcam. Please check your browser permissions.');
     });
+
+// Function to reset the transcript
+function resetTranscript() {
+    const transcriptionBox = document.getElementById('transcription');
+    transcriptionBox.value = '';
+
+    const wordsTiming = document.getElementById('wordsTiming');
+    wordsTiming.value = '';
+
+    const updateBtn = document.getElementById('updateBtn');
+    const reTranscribeBtn = document.getElementById('reTranscribeBtn');
+    updateBtn.disabled = true;
+    reTranscribeBtn.disabled = true;
+
+    const wordOverlay = document.getElementById('wordOverlay');
+    wordOverlay.textContent = '';
+    wordOverlay.style.display = 'none';
+}
